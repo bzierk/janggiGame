@@ -5,7 +5,7 @@
 class GameState:
     def __init__(self):
         """
-        Builds the Janggi board. A rectangular board with lines creating intersections in a 9x10 grid on which
+        Builds the Janggi board. A rectangular board with lines creating 90 intersections in a 9x10 grid on which
         pieces can be placed.
         """
         self._board = [
@@ -13,8 +13,8 @@ class GameState:
             ['--', '--', '--', '--', 'rGeneral', '--', '--', '--', '--'],
             ['--', 'rCannon', '--', '--', '--', '--', '--', 'rCannon', '--'],
             ['rSoldier', '--', 'rSoldier', '--', 'rSoldier', '--', 'rSoldier', '--', 'rSoldier'],
-            ['--', '--', '--', '--', '--', ],
-            ['--', '--', '--', '--', '--', ],
+            ['--', '--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--', '--'],
             ['bSoldier', '--', 'bSoldier', '--', 'bSoldier', '--', 'bSoldier', '--', 'bSoldier'],
             ['--', 'bCannon', '--', '--', '--', '--', '--', 'bCannon', '--'],
             ['--', '--', '--', '--', 'bGeneral', '--', '--', '--', '--'],

@@ -1,88 +1,76 @@
-# Author: Bryan Zierk
-# Date: 2/26/21
-# Description:
+"""
 
-import pygame as p
-import JanggiEngine
+"""
 
-width = 649
-height = 721
-xDimension = 9
-yDimension = 10
-sqWidth = width // xDimension
-sqHeight = height // yDimension
-xOffset = sqWidth // 2
-yOffset = sqHeight // 2
-maxFps = 15
-images = {}
+class GameState:
+    def __init__(self):
+        """
+        Builds the Janggi board. A rectangular board with lines creating 90 intersections in a 9x10 grid on which
+        pieces can be placed.
+        """
+        self._blue_to_play = True
+        self._board = [
+            ['rChariot', 'rElephant', 'rHorse', 'rGuard', '--', 'rGuard', 'rElephant', 'rHorse', 'rChariot'],
+            ['--', '--', '--', '--', 'rGeneral', '--', '--', '--', '--'],
+            ['--', 'rCannon', '--', '--', '--', '--', '--', 'rCannon', '--'],
+            ['rSoldier', '--', 'rSoldier', '--', 'rSoldier', '--', 'rSoldier', '--', 'rSoldier'],
+            ['--', '--', '--', '--', '--', '--', '--', '--', '--'],
+            ['--', '--', '--', '--', '--', '--', '--', '--', '--'],
+            ['bSoldier', '--', 'bSoldier', '--', 'bSoldier', '--', 'bSoldier', '--', 'bSoldier'],
+            ['--', 'bCannon', '--', '--', '--', '--', '--', 'bCannon', '--'],
+            ['--', '--', '--', '--', 'bGeneral', '--', '--', '--', '--'],
+            ['bChariot', 'bElephant', 'bHorse', 'bGuard', '--', 'bGuard', 'bElephant', 'bHorse', 'bChariot'],
+        ]
+
+    def get_board(self):
+        """
+        Returns a list of lists which represent the current board setup
+        """
+        return self._board
+
+    def blue_to_play(self):
+        """
+        If it is blue's turn, returns True, if red, returns False.
+        """
+        return self._blue_to_play
+
+    def set_blue_to_play(self):
+        """
+        If blue_to_play is True, sets it to False, otherwise sets to True.
+        """
+        if self._blue_to_play is True:
+            self._blue_to_play = False
+        else:
+            self._blue_to_play = True
 
 
-def load_images():
+class JanggiGame:
     """
-    Used to load in png files for pieces of each color
+    Creates a JanggiGame object which can be used to play Janggi
     """
-    pieces = ['bCannon', 'bChariot', 'bElephant', 'bGeneral', 'bGuard', 'bHorse', 'bSoldier',
-              'rCannon', 'rChariot', 'rElephant', 'rGeneral', 'rGuard', 'rHorse', 'rSoldier']
-    for piece in pieces:
-        images[piece] = p.transform.scale(p.image.load("Images/" + piece + ".png"), (sqWidth, sqHeight))
+    def __init__(self):
+        """
+        Initializes data members for JanggiGame
+        """
+        self._game_state = 'UNFINISHED'
 
+    def get_game_state(self):
+        """
+        Returns the current game state
+        """
+        return self._game_state
 
-def main():
-    p.init()
-    disp_board = p.display.set_mode((width, height))
-    disp_board.fill(p.Color("black"))
-    clock = p.time.Clock()
-    game_state = JanggiEngine.GameState()
-    load_images()
-    running = True
-    while running:
-        for event in p.event.get():
-            if event.type == p.QUIT:
-                running = False
-        draw_game_state(disp_board, game_state)
-        clock.tick(maxFps)
-        p.display.flip()
+    def is_in_check(self, color):
+        """
+        Takes 'red' or 'blue' as a parameter and checks if that color's General is in check. Returns True if the
+        general is in check, otherwise returns False
+        """
+        pass
 
+    def make_move(self, orig, dest):
+        """
+        Takes two strings as parameters which represent the square which a piece is moving from and moving to. The
+        squares should be identified using algebraic notation with columns labeled a-i and rows labeled 1-10 where
+        row 1 is the Red side and row 10 is the Blue side.
+        """
 
-def draw_game_state(disp_board, game_state):
-    drawBoard(disp_board)
-    drawPieces(disp_board, game_state.get_board())
-
-
-def drawBoard(disp_board):
-    # p.draw.rect(screen, "dark orange")
-    board_color = (245, 150, 23)
-    line_color = (0, 0, 0)
-    for r in range(yDimension):
-        for c in range(xDimension):
-            p.draw.rect(disp_board, board_color, p.Rect(c * sqWidth, r * sqHeight, sqWidth, sqHeight))
-
-    # draws horizontal lines on board
-    for r in range(yDimension):
-        p.draw.line(disp_board, line_color, (xOffset, (r * sqHeight) + yOffset), ((xDimension * sqWidth) - xOffset,
-                                                                             (r * sqHeight) + yOffset))
-
-    # draws vertical lines on board
-    for c in range(xDimension):
-        p.draw.line(disp_board, line_color, ((c * sqWidth) + xOffset, yOffset), ((c * sqWidth) + xOffset,
-                                                                            (yDimension * sqHeight) - yOffset))
-
-    # draws diagonal lines to represent the Palace
-    p.draw.line(disp_board, line_color, (3 * sqWidth + xOffset, 7 * sqHeight + yOffset),
-                (5 * sqWidth + xOffset, 9 * sqHeight + yOffset))
-    p.draw.line(disp_board, line_color, (3 * sqWidth + xOffset, 9 * sqHeight + yOffset),
-                (5 * sqWidth + xOffset, 7 * sqHeight + yOffset))
-    p.draw.line(disp_board, line_color, (3 * sqWidth + xOffset, 2 * sqHeight + yOffset), (5 * sqWidth + xOffset, yOffset))
-    p.draw.line(disp_board, line_color, (3 * sqWidth + xOffset, yOffset), (5 * sqWidth + xOffset, 2 * sqHeight + yOffset))
-
-
-def drawPieces(disp_board, game_state):
-    for r in range(yDimension):
-        for c in range(xDimension):
-            piece = game_state[r][c]
-            if piece != '--':
-                disp_board.blit(images[piece], p.Rect(c * sqWidth, r * sqHeight, sqWidth, sqHeight))
-
-
-if __name__ == '__main__':
-    main()

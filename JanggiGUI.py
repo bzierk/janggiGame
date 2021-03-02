@@ -6,7 +6,7 @@
 # is victorious once they have checkmated the opposing general by leaving them no remaining valid moves.
 
 import pygame as p
-import JanggiGame
+import JanggiGame as jg
 import Settings
 
 width = Settings.width
@@ -35,22 +35,53 @@ def load_images():
 
 def main():
     """
-    If JanggiGame is run as a script, main will use pygame to allow 2 users to play a game of Janggi
+    If JanggiGUI is run as a script, main will use pygame to allow 2 users to play a game of Janggi
     """
     p.init()
     disp_board = p.display.set_mode((width, height))
     disp_board.fill(p.Color("black"))
     clock = p.time.Clock()
-    game_state = JanggiGame.GameState()
+    game_state = jg.JanggiGame()
+    valid_moves = game_state.get_valid_moves()
     load_images()
-    running = True
-    while running:
+    orig_dest_list = []
+    while game_state.get_game_state() == 'UNFINISHED':
         for event in p.event.get():
             if event.type == p.QUIT:
                 running = False
+            elif event.type == p.MOUSEBUTTONDOWN:
+                loc = p.mouse.get_pos()
+                # print("loc is: ", loc)
+                mouse_col = loc[0] // sqWidth
+                mouse_row = loc[1] // sqHeight
+                sel_square = (mouse_row, mouse_col)
+                print("selected square is: ", sel_square)
+                orig_dest_list.append(sel_square)
+                print("list is: ", orig_dest_list)
+            if len(orig_dest_list) == 2:
+                # print(orig_dest_list)
+                orig = input_to_string(orig_dest_list[0][1], orig_dest_list[0][0])
+                dest = input_to_string(orig_dest_list[1][1], orig_dest_list[1][0])
+                # print("move is: ", move)
+                # print("Origin is: ", orig)
+                # print("Destination is: ", dest)
+                game_state.make_move(orig, dest)
+                # game_state.terminal_print_board()
+                orig_dest_list = []
         draw_game_state(disp_board, game_state)
         clock.tick(maxFps)
         p.display.flip()
+
+
+def input_to_string(mouse_x, mouse_y):
+    """
+    Converts mouse coordinates into a string which JanggiGame's make_move method can read
+    """
+    row = str(mouse_y + 1)
+    col = str(chr(mouse_x + 97))
+    return col + row
+
+def highlightValidMoves(disp_board, game_state, )
 
 
 def draw_game_state(disp_board, game_state):
@@ -90,8 +121,9 @@ def draw_pieces(disp_board, game_state):
     for r in range(yDimension):
         for c in range(xDimension):
             piece = game_state[r][c]
-            if piece != '--':
-                disp_board.blit(images[piece], p.Rect(c * sqWidth, r * sqHeight, sqWidth, sqHeight))
+            if piece is not None:
+                disp_board.blit(images[piece.get_color() + piece.get_name()], p.Rect(c * sqWidth, r * sqHeight,
+                                                                                     sqWidth, sqHeight))
 
 
 if __name__ == '__main__':

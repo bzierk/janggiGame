@@ -159,7 +159,7 @@ class JanggiGame:
         """
         Helper function to move pieces and update the board.
         """
-        
+
 
     def fill_possible_moves(self):
         """

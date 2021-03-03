@@ -43,13 +43,13 @@ def main():
     clock = p.time.Clock()
     game_state = jg.JanggiGame()
     valid_moves = game_state.get_valid_moves()
+    update_board = False
     load_images()
+    sel_square = ()
     orig_dest_list = []
     while game_state.get_game_state() == 'UNFINISHED':
         for event in p.event.get():
-            if event.type == p.QUIT:
-                running = False
-            elif event.type == p.MOUSEBUTTONDOWN:
+            if event.type == p.MOUSEBUTTONDOWN:
                 loc = p.mouse.get_pos()
                 # print("loc is: ", loc)
                 mouse_col = loc[0] // sqWidth
@@ -58,17 +58,25 @@ def main():
                 print("selected square is: ", sel_square)
                 orig_dest_list.append(sel_square)
                 print("list is: ", orig_dest_list)
+            elif event.type == p.KEYDOWN:
+                if event.key == p.K_z:
+                    sel_square = ()
+                    orig_dest_list = []
             if len(orig_dest_list) == 2:
-                # print(orig_dest_list)
-                orig = input_to_string(orig_dest_list[0][1], orig_dest_list[0][0])
-                dest = input_to_string(orig_dest_list[1][1], orig_dest_list[1][0])
+                move = jg.Move(orig_dest_list[0], orig_dest_list[1], game_state.get_board())
                 # print("move is: ", move)
                 # print("Origin is: ", orig)
                 # print("Destination is: ", dest)
-                game_state.make_move(orig, dest)
+                if move in valid_moves:
+                    game_state.make_move_helper(move)
+                    sel_square = ()
+                    update_board = True
                 # game_state.terminal_print_board()
                 orig_dest_list = []
-        draw_game_state(disp_board, game_state)
+        if update_board:
+            valid_moves = game_state.get_valid_moves()
+            update_board = False
+        draw_game_state(disp_board, game_state, valid_moves, sel_square)
         clock.tick(maxFps)
         p.display.flip()
 
@@ -81,11 +89,28 @@ def input_to_string(mouse_x, mouse_y):
     col = str(chr(mouse_x + 97))
     return col + row
 
-def highlightValidMoves(disp_board, game_state, )
+
+def highlight_valid_moves(disp_board, game_state, valid_moves, sel_square):
+    if sel_square != ():
+        r, c = sel_square
+        if game_state.get_board()[r][c] is not None:
+            if game_state.get_board()[r][c].get_color() == game_state.active_turn():
+                s = p.Surface((sqWidth, sqHeight))
+                s.set_alpha(100)
+                s.fill(p.Color('red'))
+                disp_board.blit(s, (c * sqWidth, r * sqHeight))
+                s.fill(p.Color('yellow'))
+                for move in valid_moves:
+                    #print("r, c: ", r, c)
+                    #print("orig: ", move.get_orig()[0], move.get_orig()[1])
+                    if move.get_orig()[0] == r and move.get_orig()[1] == c:
+                        disp_board.blit(s, (move.get_target()[1] * sqHeight, move.get_target()[0] * sqWidth))
+    pass
 
 
-def draw_game_state(disp_board, game_state):
+def draw_game_state(disp_board, game_state, valid_moves, sel_square):
     draw_board(disp_board)
+    highlight_valid_moves(disp_board, game_state, valid_moves, sel_square)
     draw_pieces(disp_board, game_state.get_board())
 
 

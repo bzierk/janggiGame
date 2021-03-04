@@ -97,9 +97,9 @@ def highlight_valid_moves(disp_board, game_state, valid_moves, sel_square):
             if game_state.get_board()[r][c].get_color() == game_state.active_turn():
                 s = p.Surface((sqWidth, sqHeight))
                 s.set_alpha(100)
-                s.fill(p.Color('red'))
+                s.fill(p.Color('black'))
                 disp_board.blit(s, (c * sqWidth, r * sqHeight))
-                s.fill(p.Color('yellow'))
+                s.fill(p.Color('red'))
                 for move in valid_moves:
                     #print("r, c: ", r, c)
                     #print("orig: ", move.get_orig()[0], move.get_orig()[1])

@@ -489,7 +489,7 @@ class Elephant(Piece):
 
         for row, col in poss_moves:
             new_row, new_col = self._row + row, self._col + col
-            if 0 < new_row < 9 and 0 < new_col < 8:
+            if 0 <= new_row <= 9 and 0 <= new_col <= 8:
                 if board[new_row][new_col] is None:
                     new_row += row
                     new_col += col
@@ -611,7 +611,7 @@ class Horse(Piece):
 
         for row, col in poss_moves:
             new_row, new_col = self._row + row, self._col + col
-            if 0 < new_row < 9 and 0 < new_col < 8:
+            if 0 <= new_row <= 9 and 0 <= new_col <= 8:
                 if board[new_row][new_col] is None:
                     new_row += row
                     new_col += col

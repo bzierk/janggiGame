@@ -494,25 +494,28 @@ class Elephant(Piece):
                     new_row += row
                     new_col += col
                     temp_coords = [new_row, new_col]
-                    if row == 0:
-                        for direction in directions:
-                            new_col = temp_coords[1]
-                            new_row = self._row + direction
-                            if board[new_row][new_col] is None:
-                                new_row += direction
-                                new_col = new_col + col
-                                if valid_space_check(new_row, new_col, board, self._color):
-                                    moves.append(Move((self._row, self._col), (new_row, new_col), board))
+                    if 0 <= new_row <= 9 and 0 <= new_col <= 8:
+                        if row == 0:
+                            for direction in directions:
+                                new_col = temp_coords[1]
+                                new_row = self._row + direction
+                                if 0 <= new_row <= 9 and 0 <= new_col <= 8:
+                                    if board[new_row][new_col] is None:
+                                        new_row += direction
+                                        new_col = new_col + col
+                                        if valid_space_check(new_row, new_col, board, self._color):
+                                            moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
-                    if col == 0:
-                        for direction in directions:
-                            new_row = temp_coords[0]
-                            new_col = self._col + direction
-                            if board[new_row][new_col] is None:
-                                new_row = new_row + row
-                                new_col += direction
-                                if valid_space_check(new_row, new_col, board, self._color):
-                                    moves.append(Move((self._row, self._col), (new_row, new_col), board))
+                        if col == 0:
+                            for direction in directions:
+                                new_row = temp_coords[0]
+                                new_col = self._col + direction
+                                if 0 <= new_row <= 9 and 0 <= new_col <= 8:
+                                    if board[new_row][new_col] is None:
+                                        new_row = new_row + row
+                                        new_col += direction
+                                        if valid_space_check(new_row, new_col, board, self._color):
+                                            moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
 
 class General(Piece):
@@ -615,16 +618,17 @@ class Horse(Piece):
                 if board[new_row][new_col] is None:
                     new_row += row
                     new_col += col
-                    if row == 0:
-                        for direction in directions:
-                            new_row = self._row + direction
-                            if valid_space_check(new_row, new_col, board, self._color):
-                                moves.append(Move((self._row, self._col), (new_row, new_col), board))
-                    if col == 0:
-                        for direction in directions:
-                            new_col = self._col + direction
-                            if valid_space_check(new_row, new_col, board, self._color):
-                                moves.append(Move((self._row, self._col), (new_row, new_col), board))
+                    if 0 <= new_row <= 9 and 0 <= new_col <= 8:
+                        if row == 0:
+                            for direction in directions:
+                                new_row = self._row + direction
+                                if valid_space_check(new_row, new_col, board, self._color):
+                                    moves.append(Move((self._row, self._col), (new_row, new_col), board))
+                        if col == 0:
+                            for direction in directions:
+                                new_col = self._col + direction
+                                if valid_space_check(new_row, new_col, board, self._color):
+                                    moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
 
 class Soldier(Piece):
@@ -738,3 +742,11 @@ class Move:
         if isinstance(other, Move):
             return self._moveID == other._moveID
         return False
+
+gs = JanggiGame()
+gs.make_move('c10', 'd8')
+gs.make_move('h1', 'i3')
+gs.make_move('a10', 'a9')
+gs.make_move('i4', 'i5')
+gs.make_move('a9', 'a8')
+gs.make_move('i3', 'h5')

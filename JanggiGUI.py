@@ -27,8 +27,8 @@ def load_images():
     """
     Creates a dictionary of png image files for each unique piece
     """
-    pieces = ['bCannon', 'bChariot', 'bElephant', 'bGeneral', 'bGuard', 'bHorse', 'bSoldier',
-              'rCannon', 'rChariot', 'rElephant', 'rGeneral', 'rGuard', 'rHorse', 'rSoldier']
+    pieces = ['blueCannon', 'blueChariot', 'blueElephant', 'blueGeneral', 'blueGuard', 'blueHorse', 'blueSoldier',
+              'redCannon', 'redChariot', 'redElephant', 'redGeneral', 'redGuard', 'redHorse', 'redSoldier']
     for piece in pieces:
         images[piece] = p.transform.scale(p.image.load("Images/" + piece + ".png"), (sqWidth, sqHeight))
 
@@ -42,7 +42,7 @@ def main():
     disp_board.fill(p.Color("black"))
     clock = p.time.Clock()
     game_state = jg.JanggiGame()
-    valid_moves = game_state.get_valid_moves()
+    valid_moves = game_state.get_valid_moves(game_state.active_turn())
     update_board = False
     load_images()
     sel_square = ()
@@ -55,9 +55,9 @@ def main():
                 mouse_col = loc[0] // sqWidth
                 mouse_row = loc[1] // sqHeight
                 sel_square = (mouse_row, mouse_col)
-                print("selected square is: ", sel_square)
+                #print("selected square is: ", sel_square)
                 orig_dest_list.append(sel_square)
-                print("list is: ", orig_dest_list)
+                #print("list is: ", orig_dest_list)
             elif event.type == p.KEYDOWN:
                 if event.key == p.K_z:
                     sel_square = ()
@@ -74,7 +74,14 @@ def main():
                 # game_state.terminal_print_board()
                 orig_dest_list = []
         if update_board:
-            valid_moves = game_state.get_valid_moves()
+            valid_moves = game_state.get_valid_moves(game_state.active_turn())
+            if len(valid_moves) == 0:
+                if game_state.active_turn() == 'blue':
+                    print('RED WON')
+                    game_state.set_game_state('RED_WON')
+                else:
+                    print('BLUE WON')
+                    game_state.set_game_state('BLUE_WON')
             update_board = False
         draw_game_state(disp_board, game_state, valid_moves, sel_square)
         clock.tick(maxFps)

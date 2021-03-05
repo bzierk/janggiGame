@@ -15,24 +15,26 @@ class JanggiGame:
         pieces can be placed. This class receives information from the Piece class and its subclasses in order to
         populate the board and keep track of the type of piece, its color, and its current position.
         """
-        self._active_turn = 'b'
+        self._active_turn = 'blue'
         self._board = [
-            [Chariot('r', 0, 0), Elephant('r', 0, 1), Horse('r', 0, 2), Guard('r', 0, 3), None, Guard('r', 0, 5),
-             Elephant('r', 0, 6), Horse('r', 0, 7), Chariot('r', 0, 8)],
-            [None, None, None, None, General('r', 1, 4), None, None, None, None],
-            [None, Cannon('r', 2, 1), None, None, None, None, None, Cannon('r', 2, 7), None],
-            [Soldier('r', 3, 0), None, Soldier('r', 3, 2), None, Soldier('r', 3, 4), None, Soldier('r', 3, 6), None,
-             Soldier('r', 3, 8)],
+            [Chariot('red', 0, 0), Elephant('red', 0, 1), Horse('red', 0, 2), Guard('red', 0, 3), None,
+             Guard('red', 0, 5), Elephant('red', 0, 6), Horse('red', 0, 7), Chariot('red', 0, 8)],
+            [None, None, None, None, General('red', 1, 4), None, None, None, None],
+            [None, Cannon('red', 2, 1), None, None, None, None, None, Cannon('red', 2, 7), None],
+            [Soldier('red', 3, 0), None, Soldier('red', 3, 2), None, Soldier('red', 3, 4), None, Soldier('red', 3, 6),
+             None, Soldier('red', 3, 8)],
             [None, None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None, None],
-            [Soldier('b', 6, 0), None, Soldier('b', 6, 2), None, Soldier('b', 6, 4), None, Soldier('b', 6, 6), None,
-             Soldier('b', 6, 8)],
-            [None, Cannon('b', 7, 1), None, None, None, None, None, Cannon('b', 7, 7), None],
-            [None, None, None, None, General('b', 8, 4), None, None, None, None],
-            [Chariot('b', 9, 0), Elephant('b', 9, 1), Horse('b', 9, 2), Guard('b', 9, 3), None, Guard('b', 9, 5),
-             Elephant('b', 9, 6), Horse('b', 9, 7), Chariot('b', 9, 8)],
+            [Soldier('blue', 6, 0), None, Soldier('blue', 6, 2), None, Soldier('blue', 6, 4), None,
+             Soldier('blue', 6, 6), None, Soldier('blue', 6, 8)],
+            [None, Cannon('blue', 7, 1), None, None, None, None, None, Cannon('blue', 7, 7), None],
+            [None, None, None, None, General('blue', 8, 4), None, None, None, None],
+            [Chariot('blue', 9, 0), Elephant('blue', 9, 1), Horse('blue', 9, 2), Guard('blue', 9, 3), None,
+             Guard('blue', 9, 5), Elephant('blue', 9, 6), Horse('blue', 9, 7), Chariot('blue', 9, 8)],
         ]
         self._game_state = 'UNFINISHED'
+        self._red_general = (1, 4)
+        self._blue_general = (8, 4)
 
     def get_board(self):
         """
@@ -64,10 +66,10 @@ class JanggiGame:
         """
         Used to change the active player. If it is currently blue's turn, 'b' will be changed to 'r', and vice versa.
         """
-        if self._active_turn == 'b':
-            self._active_turn = 'r'
+        if self._active_turn == 'blue':
+            self._active_turn = 'red'
         else:
-            self._active_turn = 'b'
+            self._active_turn = 'blue'
 
     def get_game_state(self):
         """
@@ -88,17 +90,25 @@ class JanggiGame:
         valid move which ends on the General's current square, this function returns True. If there are no valid
         moves which would attack the specified general, the function returns False.
         """
-        colors = {'red': 'r', 'blue': 'b'}
-        for row in range(len(self._board)):
-            for col in range(len(self._board[row])):
-                if self._board[row][col] is not None:
-                    if self._board[row][col].get_name() == 'General':
-                        if self._board[row][col].get_color() == colors[color]:
-                            general_pos = self._board[row][col].get_orig()
+        opponent = {'red': 'blue', 'blue': 'red'}
+        vuln_squares = set()
+        counter_moves = self.fill_possible_moves(opponent[color])
 
-        print(general_pos)
+        for move in counter_moves:
+            print("piece color", move.get_original_piece().get_color())
+            vuln_squares.add(move.get_target())
+        if self.get_general_loc(color) in vuln_squares:
+            return True
+        return False
 
-
+    def get_general_loc(self, color):
+        """
+        Returns the current row and column for the general of a specified color.
+        """
+        if color == 'red':
+            return self._red_general
+        else:
+            return self._blue_general
 
     @staticmethod
     def letter_to_number(char):
@@ -127,9 +137,17 @@ class JanggiGame:
         if self._board[orig_pair[0]][orig_pair[1]].get_color() != self._active_turn:
             return False
 
+        if len(self.get_valid_moves(self._active_turn)) == 0:
+            if self._active_turn == 'blue':
+                print('RED WON')
+                self.set_game_state('RED_WON')
+            else:
+                print('BLUE WON')
+                self.set_game_state('BLUE_WON')
+
         move = Move(orig_pair, dest_pair, self._board)
 
-        if move not in self.get_valid_moves():
+        if move not in self.get_valid_moves(self._active_turn):
             return False
 
         if move.get_orig() == move.get_target():
@@ -137,14 +155,14 @@ class JanggiGame:
                 self.set_next_turn()
                 return True
 
-        self.make_move_helper(move)
-        self.set_next_turn()
         return self.make_move_helper(move)
 
     def make_move_helper(self, move):
         """
         Helper function which takes a Move class object as a parameter and uses the information within the object
-        to update the board and update the information within the appropriate Piece class objects.
+        to update the board and update the information within the appropriate Piece class objects. If a general is
+        moved, updates the general's location in the JanggiGame class so that it can be easily referenced for
+        "check" verifications.
         """
         if self._game_state != 'UNFINISHED':
             return False
@@ -154,25 +172,115 @@ class JanggiGame:
         self._board[move.get_target()[0]][move.get_target()[1]] = orig_piece
         orig_piece.set_row(move.get_target()[0])
         orig_piece.set_col(move.get_target()[1])
+
+        if orig_piece.get_name() == 'General':
+            if orig_piece.get_color() == 'red':
+                self._red_general = (move.get_target()[0], move.get_target()[1])
+            else:
+                self._blue_general = (move.get_target()[0], move.get_target()[1])
+
         self.set_next_turn()
         return True
 
-    def fill_possible_moves(self):
+    def fill_possible_moves(self, color):
         """
         This function generates all possible moves for a player, regardless of whether or not the move would leave
         that player's general in check.
         """
-        valid_moves = []
+        possible_moves = []
         for row in range(len(self._board)):
             for col in range(len(self._board[row])):
                 if self._board[row][col] is not None:
-                    if self._board[row][col].get_color() == self._active_turn:
-                        self._board[row][col].get_legal_moves(self._board, valid_moves)
+                    if self._board[row][col].get_color() == color:
+                        self._board[row][col].get_legal_moves(self._board, possible_moves)
+
+        return possible_moves
+
+    def get_valid_moves(self, color):
+        """
+        Takes a set of all possible moves for a color according to the individual pieces' move rules and verifies
+        that they do not violate other rules by leaving their own General in check. For each possible move,
+        makes that move, generates the opponents possible moves, and checks if the General has been place in check,
+        if so that move is removed from the list of valid moves and the next move is checked. The list of valid
+        moves which is returned meets the movement rules for a given piece and does not leave the General open to a
+        revealed check.
+        """
+        valid_moves = self.fill_possible_moves(color)
+
+        for i in range(len(valid_moves)-1, -1, -1):
+            temp_move = valid_moves[i]
+            self.make_move_helper(valid_moves[i])
+            self.set_next_turn()
+            if self.is_in_check(self._active_turn):
+                valid_moves.remove(valid_moves[i])
+            self.set_next_turn()
+            self._board[temp_move.get_orig()[0]][temp_move.get_orig()[1]] = temp_move.get_original_piece()
+            self._board[temp_move.get_target()[0]][temp_move.get_target()[1]] = temp_move.get_target_piece()
+            self.set_next_turn()
 
         return valid_moves
 
-    def get_valid_moves(self):
-        return self.fill_possible_moves()
+
+def valid_space_check(row, col, board, my_color):
+    """
+    Generic function which checks that a target square can be occupied. Takes a target row, column, board instance,
+    and moving piece's color as parameters. If the target space is on the board and either empty
+    or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
+    same color, returns False.
+    """
+    if row < 0 or row > 9 or col < 0 or col > 8:
+        return False
+    if board[row][col] is None:
+        return True
+    elif board[row][col].get_color() != my_color:
+        return True
+    else:
+        return False
+
+
+def blue_palace_check(row, col, board, my_color):
+    """
+    Generic function which checks that a target palace square can be occupied. Takes a target row, column, board
+    instance,and moving piece's color as parameters. If the target space is on the board and either empty
+    or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
+    same color, returns False.
+    """
+    if row < 7 or row > 9 or col < 3 or col > 5:
+        return False
+    if board[row][col] is None:
+        return True
+    elif board[row][col].get_color() != my_color:
+        return True
+    else:
+        return False
+
+
+def is_in_palace(row, col):
+    """
+    If a coordinate is in the palace, returns True, if coordinate is outside of the palace, returns False.
+    """
+    if (9 >= row >= 7) or (2 >= row >= 0):
+        if 5 >= col >= 3:
+            return True
+
+    return False
+
+
+def red_palace_check(row, col, board, my_color):
+    """
+    Generic function which checks that a target palace square can be occupied. Takes a target row, column, board
+    instance,and moving piece's color as parameters. If the target space is on the board and either empty
+    or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
+    same color, returns False.
+    """
+    if row < 0 or row > 2 or col < 3 or col > 5:
+        return False
+    if board[row][col] is None:
+        return True
+    elif board[row][col].get_color() != my_color:
+        return True
+    else:
+        return False
 
 
 class Piece:
@@ -227,64 +335,6 @@ class Piece:
         functions.
         """
         return self._row * 1000 + self._col * 100 + new_row * 10 + new_col
-
-    def valid_space_check(self, row, col, board, my_color):
-        """
-        Generic function which checks that a target square can be occupied. Takes a target row, column, board instance,
-        and moving piece's color as parameters. If the target space is on the board and either empty
-        or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
-        same color, returns False.
-        """
-        if row < 0 or row > 9 or col < 0 or col > 8:
-            return False
-        if board[row][col] is None:
-            return True
-        elif board[row][col].get_color() != my_color:
-            return True
-        else:
-            return False
-
-    def red_palace_check(self, row, col, board, my_color):
-        """
-        Generic function which checks that a target palace square can be occupied. Takes a target row, column, board
-        instance,and moving piece's color as parameters. If the target space is on the board and either empty
-        or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
-        same color, returns False.
-        """
-        if row < 0 or row > 2 or col < 3 or col > 5:
-            return False
-        if board[row][col] is None:
-            return True
-        elif board[row][col].get_color() != my_color:
-            return True
-        else:
-            return False
-
-    def blue_palace_check(self, row, col, board, my_color):
-        """
-        Generic function which checks that a target palace square can be occupied. Takes a target row, column, board
-        instance,and moving piece's color as parameters. If the target space is on the board and either empty
-        or occupied by a piece of the other color, returns True, otherwise if it is occupied by a piece of the
-        same color, returns False.
-        """
-        if row < 7 or row > 9 or col < 3 or col > 5:
-            return False
-        if board[row][col] is None:
-            return True
-        elif board[row][col].get_color() != my_color:
-            return True
-        else:
-            return False
-
-    def is_in_palace(self, row, col):
-        """
-        If a coordinate is in the palace, returns True, if coordinate is outside of the palace, returns False.
-        """
-        if (9 >= row >= 7) or (2 >= row >= 0):
-            if 5 >= col >= 3:
-                return True
-
-        return False
 
 
 class Cannon(Piece):
@@ -342,7 +392,7 @@ class Cannon(Piece):
         if self.get_orig() in palace_squares:
             for row, col in palace_moves:
                 new_row, new_col = self._row + row, self._col + col
-                while self.is_in_palace(new_row, new_col):
+                while is_in_palace(new_row, new_col):
                     if board[new_row][new_col] is None:
                         break
                     else:
@@ -380,7 +430,7 @@ class Chariot(Piece):
 
         for row, col in poss_moves:
             new_row, new_col = self._row + row, self._col + col
-            while self.valid_space_check(new_row, new_col, board, self._color):
+            while valid_space_check(new_row, new_col, board, self._color):
                 moves.append(Move((self._row, self._col), (new_row, new_col), board))
                 # Piece cannot go through multiple opponents. If opponent is found in one direction, stop looking.
                 if board[new_row][new_col] is not None and board[new_row][new_col].get_color() != self._color:
@@ -395,7 +445,7 @@ class Chariot(Piece):
         if self.get_orig() in red_palace:
             for row, col in palace_moves:
                 new_row, new_col = self._row + row, self._col + col
-                while self.red_palace_check(new_row, new_col, board, self._color):
+                while red_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
                     if board[new_row][new_col] is not None and board[new_row][new_col].get_color() != self._color:
                         break
@@ -406,7 +456,7 @@ class Chariot(Piece):
         if self.get_orig() in blue_palace:
             for row, col in palace_moves:
                 new_row, new_col = self._row + row, self._col + col
-                while self.blue_palace_check(new_row, new_col, board, self._color):
+                while blue_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
                     if board[new_row][new_col] is not None and board[new_row][new_col].get_color() != self._color:
                         break
@@ -451,7 +501,7 @@ class Elephant(Piece):
                             if board[new_row][new_col] is None:
                                 new_row += direction
                                 new_col = new_col + col
-                                if self.valid_space_check(new_row, new_col, board, self._color):
+                                if valid_space_check(new_row, new_col, board, self._color):
                                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
                     if col == 0:
@@ -461,7 +511,7 @@ class Elephant(Piece):
                             if board[new_row][new_col] is None:
                                 new_row = new_row + row
                                 new_col += direction
-                                if self.valid_space_check(new_row, new_col, board, self._color):
+                                if valid_space_check(new_row, new_col, board, self._color):
                                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
 
@@ -490,30 +540,29 @@ class General(Piece):
         red_palace = [(0, 3), (0, 5), (2, 3), (2, 5), (1, 4)]
         palace_moves = [(-1, -1), (1, 1), (-1, 1), (1, -1)]
 
-        if self.get_color() == 'r':
+        if self.get_color() == 'red':
             for row, col in poss_moves:
                 new_row, new_col = self._row + row, self._col + col
-                if self.red_palace_check(new_row, new_col, board, self._color):
+                if red_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
-        if self.get_color() == 'b':
+        if self.get_color() == 'blue':
             for row, col in poss_moves:
                 new_row, new_col = self._row + row, self._col + col
-                if self.blue_palace_check(new_row, new_col, board, self._color):
+                if blue_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
         if self.get_orig() in red_palace:
             for row, col in palace_moves:
                 new_row, new_col = self._row + row, self._col + col
-                if self.red_palace_check(new_row, new_col, board, self._color):
+                if red_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
         if self.get_orig() in blue_palace:
             for row, col in palace_moves:
                 new_row, new_col = self._row + row, self._col + col
-                if self.blue_palace_check(new_row, new_col, board, self._color):
+                if blue_palace_check(new_row, new_col, board, self._color):
                     moves.append(Move((self._row, self._col), (new_row, new_col), board))
-
 
 
 class Guard(Piece):
@@ -535,7 +584,6 @@ class Guard(Piece):
         """
         General(self.get_color(), self.get_row(), self.get_col()).get_legal_moves(board, moves)
         return moves
-
 
 
 class Horse(Piece):
@@ -570,14 +618,13 @@ class Horse(Piece):
                     if row == 0:
                         for direction in directions:
                             new_row = self._row + direction
-                            if self.valid_space_check(new_row, new_col, board, self._color):
+                            if valid_space_check(new_row, new_col, board, self._color):
                                 moves.append(Move((self._row, self._col), (new_row, new_col), board))
                     if col == 0:
                         for direction in directions:
                             new_col = self._col + direction
-                            if self.valid_space_check(new_row, new_col, board, self._color):
+                            if valid_space_check(new_row, new_col, board, self._color):
                                 moves.append(Move((self._row, self._col), (new_row, new_col), board))
-
 
 
 class Soldier(Piece):
@@ -600,24 +647,24 @@ class Soldier(Piece):
         # Allow player to pass
         moves.append(Move((self._row, self._col), (self._row, self._col), board))
 
-        dir = {'r': 1, 'b': -1}
-        poss_moves = ((0, -1), (0, 1), (dir[self._color], 0))
+        direction = {'red': 1, 'blue': -1}
+        poss_moves = ((0, -1), (0, 1), (direction[self._color], 0))
 
         for row, col in poss_moves:
             new_row, new_col = self._row + row, self._col + col
-            if self.valid_space_check(new_row, new_col, board, self._color):
+            if valid_space_check(new_row, new_col, board, self._color):
                 moves.append(Move((self._row, self._col), (new_row, new_col), board))
 
         blue_palace = [(9, 3), (9, 5)]
         red_palace = [(0, 3), (0, 5)]
         if self._row == 1 and self._col == 4:
             for row, col in red_palace:
-                if self.valid_space_check(row, col, board, self._color):
+                if valid_space_check(row, col, board, self._color):
                     moves.append(Move((self._row, self._col), (row, col), board))
 
         if self._row == 8 and self._col == 4:
             for row, col in blue_palace:
-                if self.valid_space_check(row, col, board, self._color):
+                if valid_space_check(row, col, board, self._color):
                     moves.append(Move((self._row, self._col), (row, col), board))
 
         if self._row == 2:
@@ -641,26 +688,24 @@ class Move:
     if a check or otherwise invalid move is discovered.
     """
     def __init__(self, orig, dest, cur_board):
-        self._orig_row = orig[0]
-        self._orig_col = orig[1]
-        self._dest_row = dest[0]
-        self._dest_col = dest[1]
-        self._piece = cur_board[self._orig_row][self._orig_col]
-        self._target = cur_board[self._dest_row][self._dest_col]
+        self._orig = orig
+        self._dest = dest
+        self._piece = cur_board[self._orig[0]][self._orig[1]]
+        self._target = cur_board[self._dest[0]][self._dest[1]]
         self._cur_board = cur_board
-        self._moveID = self._orig_row * 1000 + self._orig_col * 100 + self._dest_row * 10 + self._dest_col
+        self._moveID = self._orig[0] * 1000 + self._orig[1] * 100 + self._dest[0] * 10 + self._dest[1]
 
     def get_orig(self):
         """
         Returns the origin coordinates of a desired move
         """
-        return self._orig_row, self._orig_col
+        return self._orig[0], self._orig[1]
 
     def get_target(self):
         """
         Returns the target of a move
         """
-        return self._dest_row, self._dest_col
+        return self._dest[0], self._dest[1]
 
     def get_original_piece(self):
         """
@@ -693,70 +738,3 @@ class Move:
         if isinstance(other, Move):
             return self._moveID == other._moveID
         return False
-
-"""
-DETAILED TEXT DESCRIPTIONS OF HOW TO HANDLE THE SCENARIOS
-Initializing the board:
-    My program initializes the board when the JanggiGame class is called by generating a defined list of lists. As the
-    board is generated, Piece objects are created for each piece on the board which have their color and original
-    coordinates stored for easy access later on. By rule, the active turn is set to 'b' for Blue and the game state
-    is set to 'UNFINISHED.
-    
-Determining how to represent pieces  at a given location on the board:
-    I elected to create a Piece class. I began by using a text notation to store piece information on the board
-     but this got to be a bit cumbersome as the project progressed. I reworked my program to use a Piece object stored
-     which is stored at a [row][column] index on the board and that information is stored in the Piece object. By
-     representing the pieces as objects, it cleaned up the process of determining valid pieces. Instead of iterating
-     through the board and matching strings to potential piece types, by using pieces I can directly access the
-     valid move rules which I have written into a method in each piece subclass.
-      
-Determining how to validate a given move according to the rules for each piece, turn taking and other game rules.
-    Currently, my program generates all possible moves for each piece, I have not yet accounted for check. I decided
-    to implement it by iterating through the board and for each index which is not 'None' (an empty space), the
-    get_valid_moves function calls "fill_possible_moves" which in turn calls the get_legal_moves method in the
-    Piece object, passing it a current iteration of the board and the list of valid moves. Each piece then has an
-    algorithm which iterates square by square away from the piece, according to the given piece rules, and if a square
-    qualifies as a valid move, a Move object is created from the starting square to that target square. When a player
-    attempts to play a move, the "active_turn" value is compared to the color stored in the piece object and if those
-    do not match, the player is not attempting to move their opponent's pieces and the move is disallowed.
-    
-    Now that my program generates a full list of possible moves at any given time, I plan to implement my 
-    "get_valid_moves" function which will filter out any of the possible moves which would violate other game rules
-    such as revealing a check.
-    
-    My is_in_check function keeps track of the current location of each General at a given time. In order to screen
-    for moves which would reveal a check my plan is to:
-    - Iterate through the board generating possible moves for each piece
-    - For each possible move, make the move
-    - Iterate through the board generating possible opponent moves
-    - If General is now in check, previous move revealed it and it must be undone and that move removed from valid moves
-    
-Modifying the board state after each move.
-    By using Move objects to handle my moves, I am storing the piece which was moved and the piece which was removed
-    as well as the starting and ending coordinates. This information is passed to the make_move function and used
-    to set the original square to a None value and the destination is overwritten with the original piece. 
-    
-Determining how to track which player's turn it is to play right now.
-    I initiated an "active_turn" data member in my JanggiGame class which stores either 'b' or 'r'. By rule, the blue
-    player initiates so active_turn is initiated as 'b'. After making a valid move, the "set_next_turn" method checks
-    if "active_turn == 'b'" and if so, sets it to 'r', otherwise sets it to 'b'. By alternating this data member between
-    'b' and 'r' and comparing it to the color value stored within each Piece object, I can make sure that players are
-    not playing out of turn or moving their opponents pieces.
-    
-Determining how to detect the checkmate scenario.
-    - Iterate through the board generating all valid moves
-    - If a move attacks the opponent's general:
-    - Generate valid moves for the General and check if there are any valid moves which escape check
-    - If not, check all valid moves for the defending player to test whether any moves block the attacker
-    - If defender has a move which blocks the attack, general is not in checkmate
-    - If general does not have any valid moves and defender does not have any possible moves which block the attack,
-        General is in checkmate
-        
-Determining which player has won and also figuring out when to check that.
-    - After each move, call 'is_in_check' with the opponent's color passed as parameter
-    - If 'is_in_check' returns true, generate possible moves for the general in check
-    - If the general cannot escape check, generate all possible moves for that player and check if
-        they are able to block the check
-    - If the general does not have any valid moves and the defender cannot block, general is in checkmate, update
-        status to 'PLAYER_WON' where PLAYER is the color which matches "active_turn".
-"""

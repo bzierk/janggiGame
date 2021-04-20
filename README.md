@@ -25,3 +25,23 @@ game.make_move('a4','a4') #this will pass the Red's turn and return True
 
 In the interest of self improvement (...and to simplify debugging of an otherwise complex game,) I researched the best way to implement a GUI for my game and after experimenting with a couple of options, I settled on the PyGame library. 
 
+**Beginning Board**
+
+<img src="https://i.imgur.com/CrOVIxf.png" height="564">
+
+Using public domain images, I was able to create a realistic board for the game to be played on. 
+
+In order to make the program easier to debug as well as trying to flatten the learning curve for new players, I chose to implement a move highlighting system. When a piece is selected, all possible moves will be highlighted in red as seen below. 
+
+**Example Move**
+
+<img src="https://i.imgur.com/8xN59kE.png" height="564">
+
+Currently, the game is completely playable by two players on a local machine. The game will end when one player leaves the opponent's Emperor in "Checkmate" where the 1) the Emperor has no legal moves and 2) the remainder of the defending player's army has no legal moves which would defend the Emperor.
+
+
+**TO DO**
+- Implement a "____ Player Wins" pop up when the game ends. Currently, the winning player is printed to the console.
+- Improve UI by showing a move log and images of captured pieces
+- Implement a basic AI so a player may play alone versus the computer
+- Find additional piece images and allow the player to select their pieces and the board's surface

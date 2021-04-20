@@ -31,7 +31,7 @@ In the interest of self improvement (...and to simplify debugging of an otherwis
 
 Using public domain images, I was able to create a realistic board for the game to be played on. 
 
-In order to make the program easier to debug as well as trying to flatten the learning curve for new players, I chose to implement a move highlighting system. When a piece is selected, all possible moves will be highlighted in red as seen below. 
+In order to make the program easier to debug as well as trying to flatten the learning curve for new players, I chose to implement a move highlighting system. When a piece is selected, all possible moves will be highlighted in red as seen below. In Janggi, unlike Western Chess, a player may pass their turn by not moving. I implemented this feature by having a player select a piece and then make a move to their current space. That is, double clicking a piece will pass your turn. If a piece is selected that you do not wish to move, press the "Z" key to deselect the current piece.
 
 **Example Move**
 

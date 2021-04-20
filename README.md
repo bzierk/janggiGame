@@ -42,6 +42,8 @@ Currently, the game is completely playable by two players on a local machine. Th
 
 **TO DO**
 - Implement a "____ Player Wins" pop up when the game ends. Currently, the winning player is printed to the console.
+- Package game so that it can be rune as an executable
 - Improve UI by showing a move log and images of captured pieces
+- Improve UI so game can be exited without force quitting
 - Implement a basic AI so a player may play alone versus the computer
 - Find additional piece images and allow the player to select their pieces and the board's surface
